@@ -1,6 +1,7 @@
-import React from "react";
-import jsonData from "../src/dpk_weather_data.json";
+import React, { useEffect } from "react";
+// import jsonData from "../src/dpk_weather_data.json";
 
+// using Ajax to write into the document using JS and HTML
 //See what the current data is
 // const getJSON = function (url, callback) {
 //   let xhr = new XMLHttpRequest();
@@ -25,12 +26,13 @@ import jsonData from "../src/dpk_weather_data.json";
 //   }
 // });
 
-// Trying fetch api
+// Trying fetch api for React
 // fetch("https://mm214.com/demo.php")
 //   .then((response) => response.text())
 //   .then((html) => console.log(html));
+// dont know how to get the info into a global variable to use outside of the function
 
-// Trying async/await fetch
+// Trying async/await fetch for React
 // async function postData(url = "", data = {}) {
 //   // Default options are marked with *
 //   const response = await fetch(url, {
@@ -55,41 +57,73 @@ import jsonData from "../src/dpk_weather_data.json";
 // });
 
 // Convert Kelvin to Fahrenheit for temps
-let mainTemp = Math.floor((jsonData.main.temp - 273.15) * 1.8 + 32);
-let feelsLike = Math.floor((jsonData.main.feels_like - 273.15) * 1.8 + 32);
-
-// Convert decimal to whole number for wind
-let windSpeed = Math.floor(jsonData.wind.speed);
+const tempKtoF = (temp) => Math.floor((temp - 273.15) * 1.8 + 32);
 
 function App() {
+  const [forecast, setForecast] = React.useState({});
+
+  // mainTemp = jsonData.main.temp
+  // feelsLike = jsonData.main.feels_like
+
+  // // Convert decimal to whole number for wind
+  // let windSpeed = Math.floor(forecast.wind.speed);
+
+  // Declare functions under variables
+  // good habit to use React.""
+  React.useEffect(() => {
+    async function fetchMyAPI() {
+      let response = await fetch("https://mm214.com/demo.php");
+      response = await response.json();
+      setForecast(response);
+    }
+
+    try {
+      fetchMyAPI();
+    } catch (error) {
+      console.error(error);
+    }
+
+    //   const rawData = await fetch("https://mm214.com/demo.php")
+    //     .then((response) => response.json())
+    //     .then((data) => console.log(data))
+    //     .catch((error) => console.error(error));
+  }, []);
+
   return (
     <div className="app">
       <div className="container">
-        <div className="top">
-          <div className="location">
-            <p>San Diego</p>
-          </div>
-          <div className="temp">
-            <h1>{mainTemp}°F</h1>
-          </div>
-          <div className="description">
-            <p>{jsonData.weather[0].main}</p>
-          </div>
-        </div>
-        <div className="bottom">
-          <div className="feels">
-            <p className="bold">{feelsLike}°F</p>
-            <p>Feels Like</p>
-          </div>
-          <div className="humidity">
-            <p className="bold">{jsonData.main.humidity}</p>
-            <p>Humidity</p>
-          </div>
-          <div className="wind">
-            <p className="bold">{windSpeed} MPH</p>
-            <p>Wind Speed</p>
-          </div>
-        </div>
+        {Object.keys(forecast).length > 0 ? (
+          <>
+            <div className="top">
+              <div className="location">
+                <p>San Diego</p>
+              </div>
+              <div className="temp">
+                <h1>{tempKtoF(forecast?.main?.temp)}°F</h1>
+              </div>
+              <div className="description">
+                <p>{forecast?.weather[0].main}</p>
+              </div>
+            </div>
+            <div className="bottom">
+              <div className="feels">
+                <p className="bold">{tempKtoF(forecast?.main?.feels_like)}°F</p>
+                <p>Feels Like</p>
+              </div>
+              <div className="humidity">
+                <p className="bold">{forecast?.main?.humidity}</p>
+                <p>Humidity</p>
+              </div>
+              <div className="wind">
+                <p className="bold">{Math.floor(forecast?.wind?.speed)} MPH</p>
+                <p>Wind Speed</p>
+              </div>
+            </div>
+            {/* loading spinner sometimes instead of the string*/}
+          </>
+        ) : (
+          "no results"
+        )}
       </div>
     </div>
   );
